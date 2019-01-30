@@ -9,12 +9,7 @@ import net.sourceforge.avalonirc.server.netty.IRCServer
 class ChannelActor(name: String) extends Actor {
 
   val usersList = ArrayBuffer[String]()
-
   val users = context.system.actorSelection("akka://AvalonIRC/user/users")
-
-  //val bots = List( context.actorOf(Props(new ChatBot(self))) )
-  val bots: List[ActorRef] = List()
-
   var topic: Option[String] = None
 
   override def receive: Receive = {
@@ -34,10 +29,6 @@ class ChannelActor(name: String) extends Actor {
       val list = (usersList filter (! _.equals(nick) )).toList
       val msg = new SendPrivateMsg(":" + from, list,s"PRIVMSG $name :$message")
       users ! msg
-
-      bots.foreach(
-        ref => ref ! message.toString
-      )
     }
 
     case s: String => {
@@ -54,8 +45,6 @@ class ChannelActor(name: String) extends Actor {
 object ChannelActor{
   val MAX_SIZE = 20
 }
-
-
 
 class ChatBot(val chatRoom: ActorRef) extends Actor{
 

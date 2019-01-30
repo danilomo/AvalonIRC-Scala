@@ -8,7 +8,7 @@ import scala.concurrent.Promise
 class NettyConnection(context: ChannelHandlerContext) extends ClientConnection {
 
   private  val channel = context.channel()
-  //override val id      = context.channel.id()
+  override val id = context.channel().id
 
   override def write(message: String) = {
     val nettyFuture = channel.writeAndFlush(message)
@@ -27,6 +27,9 @@ class NettyConnection(context: ChannelHandlerContext) extends ClientConnection {
 
     promise.future
   }
-  //override def id = new ConnectionId(context.channel().id())
-  override def id = context.channel().id
+
+  override def close() = {
+    channel.close()
+  }
+
 }

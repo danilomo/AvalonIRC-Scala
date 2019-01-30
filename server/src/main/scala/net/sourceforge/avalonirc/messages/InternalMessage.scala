@@ -1,7 +1,7 @@
 package net.sourceforge.avalonirc.messages
 
 import akka.actor.ActorRef
-import net.sourceforge.avalonirc.server.{ClientConnection, ConnectionId}
+import net.sourceforge.avalonirc.server.{ClientConnection}
 
 trait InternalMessage
 

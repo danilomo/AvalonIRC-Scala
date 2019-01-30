@@ -4,6 +4,7 @@ import scala.concurrent.Future
 
 trait ClientConnection {
   def write( message: String ): Future[WriteOperation]
+  def close(): Unit
   def id: Any
 }
 
