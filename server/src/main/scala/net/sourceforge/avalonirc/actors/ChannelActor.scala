@@ -4,7 +4,7 @@ import akka.actor.{Actor, ActorRef, Props}
 
 import scala.collection.mutable.ArrayBuffer
 import net.sourceforge.avalonirc.messages._
-import net.sourceforge.avalonirc.server.IRCServer
+import net.sourceforge.avalonirc.server.netty.IRCServer
 
 class ChannelActor(name: String) extends Actor {
 

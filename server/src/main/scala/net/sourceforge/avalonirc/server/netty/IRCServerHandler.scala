@@ -1,28 +1,27 @@
-package net.sourceforge.avalonirc.server
+package net.sourceforge.avalonirc.server.netty
 
 import akka.actor.ActorSystem
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
-import net.sourceforge.avalonirc.messages.{OpenConnection, InvalidMessage, MessageReceived, UserMessage}
+import net.sourceforge.avalonirc.messages.{ConnectionOpened, InvalidMessage, MessageReceived, UserMessage}
 
 @Sharable
 class IRCServerHandler(val system: ActorSystem) extends SimpleChannelInboundHandler[String] {
 
   val serverActor = system.actorSelection("akka://AvalonIRC/user/server" )
 
-  override def handlerAdded(ctx: ChannelHandlerContext): Unit = {
-    serverActor ! new OpenConnection( ctx.channel().id(), ctx )
+  override def handlerAdded(context: ChannelHandlerContext): Unit = {
+    serverActor ! new ConnectionOpened( new NettyConnection(context) )
   }
 
   override def channelRead0(ctx: ChannelHandlerContext, msg: String): Unit = {
 
     val message = UserMessage(msg)
     val id  = ctx.channel().id()
-    println("<<<" + msg.trim())
 
     message match {
       case _: InvalidMessage => {
-        //println("Invalid message " + msg)
+        // TODO Response with proper message
       }
 
       case _ => {

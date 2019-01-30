@@ -1,14 +1,12 @@
 package net.sourceforge.avalonirc.actors
 
 import akka.actor.Actor
-import io.netty.channel.{ChannelFuture, ChannelFutureListener, ChannelHandlerContext, ChannelId}
 import net.sourceforge.avalonirc.messages._
-import net.sourceforge.avalonirc.server.{IRCServer, ReplyCodes}
+import net.sourceforge.avalonirc.server.{ClientConnection, ReplyCodes}
+import net.sourceforge.avalonirc.server.netty.IRCServer
 
-class UserActor(val channelId: ChannelId,
-                val channelContext: ChannelHandlerContext) extends Actor {
+class UserActor(val connection: ClientConnection) extends Actor {
 
-  val channel = channelContext.channel()
   val users = context.system.actorSelection("akka://AvalonIRC/user/users")
   var channels = context.system.actorSelection("akka://AvalonIRC/user/channels")
 
@@ -32,7 +30,8 @@ class UserActor(val channelId: ChannelId,
 
     nickAndUser match {
       case Some((nick, user)) => {
-        channel.writeAndFlush(IRCServer.welcomeMessage(nick))
+        //channel.writeAndFlush(IRCServer.welcomeMessage(nick))
+        connection.write(IRCServer.welcomeMessage(nick))
         users ! RegisterNick(nick, self)
         context.become(receiveRegistered)
       }
@@ -61,7 +60,8 @@ class UserActor(val channelId: ChannelId,
     case NickNotAvailable(nick) => {
       val host = IRCServer.HOST_NAME
       val code = ReplyCodes.ERR_ALREADYREGISTRED
-      channel.writeAndFlush(s":$host $code * $nick :Nickname already in use\r\n")
+      //channel.writeAndFlush(s":$host $code * $nick :Nickname already in use\r\n")
+      connection.write(s":$host $code * $nick :Nickname already in use\r\n")
     }
 
   }
@@ -81,7 +81,8 @@ class UserActor(val channelId: ChannelId,
     }
 
     case msg: SendMessageToClient => {
-      channel.writeAndFlush(msg.toString() + "\r\n")
+      //channel.writeAndFlush(msg.toString() + "\r\n")
+      connection.write(msg.toString() + "\r\n")
     }
 
     case msg: UserListMessage => {
@@ -95,18 +96,19 @@ class UserActor(val channelId: ChannelId,
       val (more, line) = c.nextMessage()
 
       if (more) {
-        channel.writeAndFlush(line + "\r\n").addListener(
-          (fut: ChannelFuture) => {
-            self ! c
-          }
-        )
+        //channel.writeAndFlush(line + "\r\n").addListener(
+        //  (_: ChannelFuture) => {
+        //    self ! c
+        //  }
+        //)
       } else
-        channel.writeAndFlush(line + "\r\n")
+        //channel.writeAndFlush(line + "\r\n")
+        connection.write(line + "\r\n")
     }
 
     case Ping(server) => {
-      println(":" + IRCServer.HOST_NAME + " PONG " + IRCServer.HOST_NAME + " " + server + "\r\n")
-      channel.writeAndFlush(":" + IRCServer.HOST_NAME + " PONG " + IRCServer.HOST_NAME + " " + server + "\r\n")
+      //channel.writeAndFlush(":" + IRCServer.HOST_NAME + " PONG " + IRCServer.HOST_NAME + " " + server + "\r\n")
+      connection.write(":" + IRCServer.HOST_NAME + " PONG " + IRCServer.HOST_NAME + " " + server + "\r\n")
     }
 
     case Mode(channel, None) => {
@@ -115,8 +117,8 @@ class UserActor(val channelId: ChannelId,
 
     case _: Quit => {
       users ! new UnregisterNick(nick.get)
-      val fut = channel.writeAndFlush("Bye bye!\r\n")
-      fut.addListener(ChannelFutureListener.CLOSE)
+      //val fut = channel.writeAndFlush("Bye bye!\r\n")
+      //fut.addListener(ChannelFutureListener.CLOSE)
     }
   }
 }

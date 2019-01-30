@@ -2,7 +2,7 @@ package net.sourceforge.avalonirc
 
 import akka.actor.{ActorSystem, Props}
 import net.sourceforge.avalonirc.actors.{ChannelsActor, ServerActor, UsersActor}
-import net.sourceforge.avalonirc.server.IRCServer
+import net.sourceforge.avalonirc.server.netty.IRCServer
 
 /**
  * @author ${user.name}
@@ -17,6 +17,6 @@ object ServerMain extends App {
 
   val ircServer = new IRCServer(6667, system )
 
-  ircServer.start().sync()
+  ircServer.start()
 
 }
